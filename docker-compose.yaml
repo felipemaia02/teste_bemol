@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  bemol-channels-db:
+      image: mysql:8.0.28
+      container_name: bemol-channels-database-container
+      restart: always
+      ports:
+        - "3306:3306"
+      environment:
+        MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+        MYSQL_DATABASE: ink_dev
+      networks:
+        - bemol-channels-backend-network
+
+  bemol-channels-backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile.dev
+    working_dir: /bemol-channels-backend
+    image: bemol-channels-backend-image
+    container_name: bemol-channels-backend-container
+    volumes:
+      - ./app:/bemol-channels-backend/app
+    command: uvicorn app.main:app --host 0.0.0.0 --reload
+    ports:
+      - 8000:8000
+    restart: on-failure
+    env_file:
+      - .env
+    networks:
+      - bemol-channels-backend-network
+    depends_on:
+      - "bemol-channels-db"
+
+      
+networks:
+  myra-ink-backend-network:
